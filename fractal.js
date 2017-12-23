@@ -1,5 +1,8 @@
 // The function gets called when the window is fully loaded
 window.onload = function() {
+    // Prompt user for degree
+    // var degree = parseInt(prompt("What degree equation to use?"));
+
     // Get the canvas and context
     var canvas = document.getElementById("canvas"); 
     var context = canvas.getContext("2d");
@@ -15,9 +18,9 @@ window.onload = function() {
     canvas2.width = window.innerWidth;
 
     // Rectangle canvas settings
-    context2.strokeStyle="#FF0000";
-    context2.lineWidth=1;
-    context2.setLineDash([5, 3])
+    context2.strokeStyle="#0000FF";
+    context2.lineWidth=2;
+    // context2.setLineDash([5, 3])
     rect = {};
     drag = false;
  
@@ -34,28 +37,67 @@ window.onload = function() {
     var imagedata = context.createImageData(width, height);
 
     // Define maxiter
-    var maxiter = 256;
+    var maxiter = 2048;
+
+    // Complex multiplication
+    function complex_mult(a, b, c, d){
+        return [a*c-b*d, c*b+a*d];
+    }
+
+    // Complex powers
+    function complex_power(a_r, a_i, n){
+        if(n==1){
+            return [a_r, a_i];
+        }
+        else if (n ==2){
+            return [a_r*a_r - a_i*a_i, a_r*a_i + a_r*a_i];
+        }
+        else{
+            prev_result = complex_power(a_r, a_i, n-1);
+            curr_a_r = prev_result[0];
+            curr_a_i = prev_result[1];
+            return complex_mult(curr_a_r, curr_a_i, a_r, a_i);
+        }
+
+    }
 
     // Generate color pallette
+    // function generatePalette() {
+    //     // Calculate a gradient
+    //     var roffset = 24;
+    //     var goffset = 16;
+    //     var boffset = 0;
+    //     for (var i=0; i<256; i++) {
+    //         palette[i] = [roffset, goffset, boffset];
+            
+    //         if (i < 64) {
+    //             roffset += 3;
+    //         } else if (i<128) {
+    //             goffset += 3;
+    //         } else if (i<192) {
+    //             boffset += 3;
+    //         }
+    //     }
+    // }
     function generatePalette() {
         // Calculate a gradient
         var roffset = 24;
         var goffset = 16;
         var boffset = 0;
-        for (var i=0; i<256; i++) {
+        for (var i=0; i<2048; i++) {
             palette[i] = [roffset, goffset, boffset];
             
             if (i < 64) {
-                roffset += 3;
+                roffset += 7;
             } else if (i<128) {
-                goffset += 5;
+                goffset += 7;
             } else if (i<192) {
                 boffset += 5;
             }
         }
     }
-    generatePalette();
 
+    generatePalette();
 
     // Mandelbrot function
     function mandelbrot(c_r, c_i){
@@ -65,7 +107,7 @@ window.onload = function() {
         var iter = 0;
         while (z_r*z_r + z_i*z_i <= 4 && iter < maxiter){
             var new_z_r = z_r*z_r - z_i*z_i + c_r;
-            var new_z_i = 2*z_r*z_i + c_i;
+            var new_z_i = z_r*z_i + z_r*z_i + c_i;
             z_r = new_z_r;
             z_i = new_z_i;
             iter ++;
@@ -119,7 +161,13 @@ window.onload = function() {
       N_r = upperLeft_r;
       M_r = (lowerRight_r - N_r)/width;
       N_i = upperLeft_i;
-      M_i = -M_r;//(lowerRight_i - N_i)/height;
+      M_i = (lowerRight_i - N_i)/height;
+      if (Math.abs(M_r) > Math.abs(M_i)){
+        M_i = -M_r;
+      }
+      else{
+        M_r = -M_i;
+      }
       createImage(M_r, M_i, N_r, N_i);
       context.putImageData(imagedata, 0, 0);
       context2.clearRect(0, 0, canvas2.width, canvas2.height);
