@@ -32,12 +32,10 @@ window.onload = function() {
     var N_i = 1.5;
     var M_i = -M_r;//-N_i/Math.floor(height/2.0);
     var palette = [];
+    var large_palette = [];
  
     // Create an ImageData object
     var imagedata = context.createImageData(width, height);
-
-    // Define maxiter
-    var maxiter = 2048;
 
     // Complex multiplication
     function complex_mult(a, b, c, d){
@@ -62,30 +60,30 @@ window.onload = function() {
     }
 
     // Generate color pallette
-    // function generatePalette() {
-    //     // Calculate a gradient
-    //     var roffset = 24;
-    //     var goffset = 16;
-    //     var boffset = 0;
-    //     for (var i=0; i<256; i++) {
-    //         palette[i] = [roffset, goffset, boffset];
-            
-    //         if (i < 64) {
-    //             roffset += 3;
-    //         } else if (i<128) {
-    //             goffset += 3;
-    //         } else if (i<192) {
-    //             boffset += 3;
-    //         }
-    //     }
-    // }
     function generatePalette() {
         // Calculate a gradient
         var roffset = 24;
         var goffset = 16;
         var boffset = 0;
-        for (var i=0; i<2048; i++) {
+        for (var i=0; i<256; i++) {
             palette[i] = [roffset, goffset, boffset];
+            
+            if (i < 64) {
+                roffset += 3;
+            } else if (i<128) {
+                goffset += 3;
+            } else if (i<192) {
+                boffset += 3;
+            }
+        }
+    }
+    function generatelarge_Palette() {
+        // Calculate a gradient
+        var roffset = 24;
+        var goffset = 16;
+        var boffset = 0;
+        for (var i=0; i<2048; i++) {
+            large_palette[i] = [roffset, goffset, boffset];
             
             if (i < 64) {
                 roffset += 7;
@@ -98,9 +96,10 @@ window.onload = function() {
     }
 
     generatePalette();
+    generatelarge_Palette();
 
     // Mandelbrot function
-    function mandelbrot(c_r, c_i){
+    function mandelbrot(c_r, c_i, maxiter){
         var z_r = 0;
         var z_i = 0;
         var color = [0,0,0];
@@ -113,13 +112,18 @@ window.onload = function() {
             iter ++;
         }
         var index = Math.floor((iter / (maxiter)) * 255);
-        color = palette[index];
+        if (maxiter = 2048){
+            color = large_palette[index];
+        }
+        else{
+            color = palette[index];
+        }
         return color;
     }
 
  
     // Create the image
-    function createImage(M_r, M_i, N_r, N_i) {
+    function createImage(M_r, M_i, N_r, N_i, maxiter) {
         // Loop over all of the pixels
         for (var x=0; x<width; x++) {
             for (var y=0; y<height; y++) {
@@ -129,7 +133,7 @@ window.onload = function() {
                 c_r = M_r*x+N_r;
                 c_i = M_i*y+N_i;
                 // Get number of iterations
-                color_value = mandelbrot(c_r, c_i);
+                color_value = mandelbrot(c_r, c_i, maxiter);
                 // Set pixel value
                 imagedata.data[pixelindex] = color_value[0];     // Red
                 imagedata.data[pixelindex+1] = color_value[1]; // Green
@@ -168,8 +172,8 @@ window.onload = function() {
       else{
         M_r = -M_i;
       }
-      createImage(M_r, M_i, N_r, N_i);
-      context.putImageData(imagedata, 0, 0);
+      createImage(M_r, M_i, N_r, N_i, 2048);
+      // context.putImageData(imagedata, 0, 0);
       context2.clearRect(0, 0, canvas2.width, canvas2.height);
 
     }
@@ -190,7 +194,7 @@ window.onload = function() {
     // Main loop
     function main(tframe) {
          // Create the image
-        createImage(M_r, M_i, N_r, N_i);
+        createImage(M_r, M_i, N_r, N_i, 256);
  
         // Draw the image data to the canvas
         context.putImageData(imagedata, 0, 0);
